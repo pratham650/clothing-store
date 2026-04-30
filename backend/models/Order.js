@@ -11,9 +11,13 @@ const orderSchema = new mongoose.Schema({
   ],
   totalAmount: Number,
   shippingAddress: {
-    street: String,
+    name: String,
+    email: String,
+    phone: String,
+    address: String,
     city: String,
     pincode: String,
+    paymentMethod: String,
   },
   status: {
     type: String,

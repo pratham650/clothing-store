@@ -1,10 +1,13 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom"; // ✅ added useLocation
 import { useCart } from "../context/CartContext";
 
 const Buy = () => {
   const { cartItems = [], clearCart } = useCart();
   const navigate = useNavigate();
+  const location = useLocation(); // ✅ grab router state
+  const selectedItems = location.state?.selectedItems || cartItems;
+  const API_URL = import.meta.env.VITE_API_URL;
 
   const [client, setClient] = useState({
     name: "",
@@ -22,15 +25,15 @@ const Buy = () => {
   const [orderPlaced, setOrderPlaced] = useState(false);
 
   useEffect(() => {
-    if (!cartItems || cartItems.length === 0) {
+    if (!selectedItems || selectedItems.length === 0) {
       navigate("/cart");
     }
-  }, [cartItems, navigate]);
+  }, [selectedItems, navigate]); // ✅ updated dependency
 
-  const totalPrice = cartItems.reduce(
+  const totalPrice = selectedItems.reduce(
     (total, item) => total + item.price * item.quantity,
     0
-  );
+  ); // ✅ total based on selected items
 
   const isFormValid = () => {
     const { name, email, phone, address, city, pincode } = client;
@@ -45,7 +48,7 @@ const Buy = () => {
   };
 
   const generateOtp = () => {
-    const newOtp = Math.floor(100000 + Math.random() * 900000).toString();
+    const newOtp = Math.floor(100000 + Math.random() * 90000).toString();
     setOtp(newOtp);
     alert(`📲 OTP sent: ${newOtp}`); // Fake OTP for testing
     setOtpSent(true);
@@ -67,20 +70,20 @@ const Buy = () => {
     }
 
     if (!isVerified) {
-      alert("📲 Please verify your mobile number first.");
+      alert(" Please verify your mobile number first.");
       return;
     }
 
     try {
-      const response = await fetch("http://localhost:5000/api/orders", {
+      const response = await fetch(`${API_URL}/api/orders`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
         body: JSON.stringify({
-          cartItems: cartItems.map((item) => ({
-            productId: item._id, // Make sure item._id exists
+          cartItems: selectedItems.map((item) => ({
+            productId: item._id,
             quantity: item.quantity,
             price: item.price,
           })),
@@ -100,66 +103,66 @@ const Buy = () => {
 
       if (!response.ok) throw new Error(data.message || "Order failed");
 
-      alert("✅ Order Placed Successfully!");
+      alert(" Order Placed Successfully!");
       setOrderPlaced(true);
       clearCart();
     } catch (error) {
-      alert("❌ Order Error: " + error.message);
+      alert(" Order Error: " + error.message);
       console.error("Order Error:", error);
     }
   };
 
   return (
-    <div className="min-h-screen bg-white px-6 py-10 font-[Inter]">
-      <h1 className="text-3xl font-bold text-gray-800 mb-6">Delivery Details</h1>
+    <div className="min-h-screen bg-white px-6 py-10 font-[Inter] animate-fadeIn">
+      <h1 className="text-3xl font-bold text-gray-800 mb-6 animate-slideIn">Delivery Details</h1>
 
       {orderPlaced ? (
-        <div className="p-6 bg-green-100 text-green-800 rounded-xl border border-green-400">
-          ✅ Your order has been placed successfully!
+        <div className="p-6 bg-green-100 text-green-800 rounded-xl border border-green-400 animate-scaleIn">
+           Your order has been placed successfully!
         </div>
       ) : (
         <>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
             {/* INPUT FIELDS */}
-            <input type="text" placeholder="Full Name *" className="border p-3 rounded-lg"
+            <input type="text" placeholder="Full Name *" className="border p-3 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300"
               value={client.name}
               onChange={(e) => setClient({ ...client, name: e.target.value })}
             />
-            <input type="email" placeholder="Email *" className="border p-3 rounded-lg"
+            <input type="email" placeholder="Email *" className="border p-3 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300"
               value={client.email}
               onChange={(e) => setClient({ ...client, email: e.target.value })}
             />
             <div className="flex gap-2">
-              <input type="tel" placeholder="Mobile Number *" className="border p-3 rounded-lg w-full"
+              <input type="tel" placeholder="Mobile Number *" className="border p-3 rounded-lg w-full focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300"
                 value={client.phone}
                 onChange={(e) => setClient({ ...client, phone: e.target.value })}
               />
-              <button type="button" className="bg-blue-600 text-white px-4 rounded" onClick={generateOtp} disabled={otpSent}>
+              <button type="button" className="bg-blue-600 text-white px-4 rounded hover:bg-blue-700 transition-all duration-300 transform hover:scale-105" onClick={generateOtp} disabled={otpSent}>
                 Send OTP
               </button>
             </div>
 
             {otpSent && !isVerified && (
-              <div className="flex gap-2">
-                <input type="text" placeholder="Enter OTP" className="border p-3 rounded-lg w-full"
+              <div className="flex gap-2 animate-slideIn">
+                <input type="text" placeholder="Enter OTP" className="border p-3 rounded-lg w-full focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-300"
                   value={enteredOtp}
                   onChange={(e) => setEnteredOtp(e.target.value)}
                 />
-                <button type="button" className="bg-green-600 text-white px-4 rounded" onClick={verifyOtp}>
+                <button type="button" className="bg-green-600 text-white px-4 rounded hover:bg-green-700 transition-all duration-300 transform hover:scale-105" onClick={verifyOtp}>
                   Verify
                 </button>
               </div>
             )}
 
-            <input type="text" placeholder="Address *" className="border p-3 rounded-lg"
+            <input type="text" placeholder="Address *" className="border p-3 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300"
               value={client.address}
               onChange={(e) => setClient({ ...client, address: e.target.value })}
             />
-            <input type="text" placeholder="City *" className="border p-3 rounded-lg"
+            <input type="text" placeholder="City *" className="border p-3 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300"
               value={client.city}
               onChange={(e) => setClient({ ...client, city: e.target.value })}
             />
-            <input type="text" placeholder="Pincode *" className="border p-3 rounded-lg"
+            <input type="text" placeholder="Pincode *" className="border p-3 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300"
               value={client.pincode}
               onChange={(e) => setClient({ ...client, pincode: e.target.value })}
             />
@@ -167,8 +170,8 @@ const Buy = () => {
 
           <h2 className="text-xl font-semibold text-gray-700 mb-2">Your Items:</h2>
           <ul className="space-y-4 mb-6">
-            {cartItems.map((item, idx) => (
-              <li key={idx} className="border p-4 rounded-xl shadow flex justify-between items-center">
+            {selectedItems.map((item, idx) => ( // ✅ changed from cartItems
+              <li key={idx} className="border p-4 rounded-xl shadow flex justify-between items-center hover:shadow-lg transition-all duration-300 transform hover:scale-[1.02] animate-slideIn">
                 <div className="flex gap-4">
                   <img src={item.image} alt={item.name} className="w-16 h-16 object-cover rounded-xl" />
                   <div>
@@ -191,19 +194,19 @@ const Buy = () => {
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
             <button onClick={() => handlePlaceOrder("QR Code")}
-              className="bg-blue-500 hover:bg-blue-600 text-white p-4 rounded-xl text-lg font-semibold transition"
+              className="bg-blue-500 hover:bg-blue-600 text-white p-4 rounded-xl text-lg font-semibold transition-all duration-300 transform hover:scale-105 hover:shadow-xl"
             >
-              📷 Pay via QR Code
+               Pay via QR Code
             </button>
             <button onClick={() => handlePlaceOrder("UPI ID")}
-              className="bg-purple-500 hover:bg-purple-600 text-white p-4 rounded-xl text-lg font-semibold transition"
+              className="bg-purple-500 hover:bg-purple-600 text-white p-4 rounded-xl text-lg font-semibold transition-all duration-300 transform hover:scale-105 hover:shadow-xl"
             >
-              🔗 Pay via UPI ID
+               Pay via UPI ID
             </button>
             <button onClick={() => handlePlaceOrder("Cash on Delivery")}
-              className="bg-green-500 hover:bg-green-600 text-white p-4 rounded-xl text-lg font-semibold transition"
+              className="bg-green-500 hover:bg-green-600 text-white p-4 rounded-xl text-lg font-semibold transition-all duration-300 transform hover:scale-105 hover:shadow-xl"
             >
-              💸 Cash on Delivery
+               Cash on Delivery
             </button>
           </div>
         </>

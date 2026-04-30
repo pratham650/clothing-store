@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 const dotenv = require("dotenv");
-const Product = require("./models/productModel");
+const Product = require("./models/Product");
 const connectDB = require("./config/db");
 
 // Load environment variables

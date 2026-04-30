@@ -21,7 +21,7 @@ export const CartProvider = ({ children }) => {
   const addToCart = (product, selectedSize, selectedColor, quantity = 1) => {
     const existingIndex = cartItems.findIndex(
       (item) =>
-        item.id === product.id &&
+        item._id === product._id &&
         item.size === selectedSize &&
         item.color === selectedColor
     );
@@ -32,7 +32,10 @@ export const CartProvider = ({ children }) => {
       setCartItems(updatedCart);
     } else {
       const newItem = {
-        ...product,
+        _id: product._id || product.id,
+        name: product.name,
+        image: product.image,
+        price: product.price,
         size: selectedSize,
         color: selectedColor,
         quantity,
@@ -41,19 +44,19 @@ export const CartProvider = ({ children }) => {
     }
   };
 
-  const removeFromCart = (id, size, color) => {
+  const removeFromCart = (_id, size, color) => {
     setCartItems(
       cartItems.filter(
         (item) =>
-          item.id !== id || item.size !== size || item.color !== color
+          item._id !== _id || item.size !== size || item.color !== color
       )
     );
   };
 
-  const updateQuantity = (id, size, color, quantity) => {
+  const updateQuantity = (_id, size, color, quantity) => {
     setCartItems(
       cartItems.map((item) =>
-        item.id === id &&
+        item._id === _id &&
         item.size === size &&
         item.color === color
           ? { ...item, quantity: Number(quantity) }

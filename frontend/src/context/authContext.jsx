@@ -5,26 +5,27 @@ const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [version, setVersion] = useState(0); // 🔁 this triggers re-render
 
   const login = (token) => {
     localStorage.setItem("token", token);
     const decoded = jwtDecode(token);
     setUser(decoded);
+    setVersion((prev) => prev + 1); // 🔁 trigger context update
   };
 
   const logout = () => {
     localStorage.removeItem("token");
     setUser(null);
+    setVersion((prev) => prev + 1); // 🔁 trigger context update
   };
 
-  // Auto-login if token is still valid
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (token) {
       try {
         const decoded = jwtDecode(token);
-
-        // Only allow login if not expired
         const isExpired = decoded.exp * 1000 < Date.now();
         if (!isExpired) {
           setUser(decoded);
@@ -36,10 +37,11 @@ export const AuthProvider = ({ children }) => {
         logout();
       }
     }
+    setLoading(false);
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, login, logout }}>
+    <AuthContext.Provider value={{ user, login, logout, loading, version }}>
       {children}
     </AuthContext.Provider>
   );

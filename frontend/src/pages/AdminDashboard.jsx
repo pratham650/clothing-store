@@ -6,10 +6,11 @@ const AdminDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const token = localStorage.getItem("token");
+  const API_URL = import.meta.env.VITE_API_URL;
 
   const fetchOrders = async () => {
     try {
-      const res = await axios.get("/api/orders/admin", {
+      const res = await axios.get(`${API_URL}/api/orders/admin`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setOrders(res.data);
@@ -27,7 +28,7 @@ const AdminDashboard = () => {
   const updateOrderStatus = async (orderId, newStatus) => {
     try {
       await axios.put(
-        `/api/orders/${orderId}/status`,
+        `${API_URL}/api/orders/${orderId}/status`,
         { status: newStatus },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -46,7 +47,17 @@ const AdminDashboard = () => {
 
   return (
     <div className="p-8 font-[Inter] bg-white min-h-screen">
-      <h1 className="text-3xl font-bold mb-6 text-gray-800">📦 Admin Dashboard - Orders</h1>
+      <h1 className="text-3xl font-bold mb-6 text-gray-800">📦 Admin Dashboard</h1>
+      
+      {/* Quick Links */}
+      <div className="mb-8 flex gap-4">
+        <a
+          href="/admin/users"
+          className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-semibold transition-all duration-300 shadow-md hover:shadow-lg"
+        >
+          👥 Manage Users
+        </a>
+      </div>
 
       <div className="overflow-x-auto">
         <table className="w-full border border-gray-200 shadow-md rounded-xl overflow-hidden">
